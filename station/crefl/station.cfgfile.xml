@@ -1,0 +1,29 @@
+<!-- XML document that can be expanded into a station.cfgfile
+     for most NCS stations (everything past L1 - products, basically -->
+
+<NCS_Station name="crefl" verbose_logging="true">
+	<group>crefl grp1</group>
+	<algorithm>
+		<installation>{cfg_nisgs_home}/SPA/crefl/wrapper/crefl/installation.xml</installation>
+		<version>crefl 1.4.2</version>
+	</algorithm>
+	<inputs>
+		<product type="drl.{sat}.modis.mxd02qkm" wrappertype="modis.mxd02qkm"/>
+		<product type="drl.{sat}.modis.mxd02hkm" wrappertype="modis.mxd02hkm"/>
+		<product type="drl.{sat}.modis.mxd021km" wrappertype="modis.mxd021km"/>
+	</inputs>
+	<setup>
+		<!-- Set satletter to O/terra or Y/aqua -->
+		<Ncs_set name="satletter" value="O" />
+		<Ncs_test name="{sat}" pattern="^[Aa][Qq][Uu][Aa]$" result="aqua-p" />
+		<Ncs_set name="satletter" value="Y" runFlag="{aqua-p}" />
+		<!-- somehow set starttime string here -->
+		<Dsm_command result="passDate" class="cfg_pass" method="getAos"/>
+		<Ncs_date name="passDate" getValue="starttime"/>
+	</setup>
+	<outputs>
+		<product type="drl.{sat}.modis.crefl"
+			filename="{dataDirectory}{productDirectory}{/}M{satletter}Dcrefl.{starttime}.hdf"
+			wrappertype="modis.crefl"/>
+	</outputs>
+</NCS_Station>

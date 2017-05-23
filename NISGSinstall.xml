@@ -1,0 +1,20 @@
+<NISGS-SPA-INSTALL>
+<OutputTypes>
+<OutputType
+	name="drl.aqua.modis.crefl"
+	spacecraft="AQUA"
+	sensor="modis"
+	description="crefl"
+	level="2"
+	is-directory="data/aqua/modis/level2/"
+	filepattern="'MYDcrefl.'yyDDDHHmmss'.hdf'" />
+<OutputType
+	name="drl.terra.modis.crefl"
+	spacecraft="TERRA"
+	sensor="modis"
+	description="crefl"
+	level="2"
+	is-directory="data/terra/modis/level2/"
+	filepattern="'MODcrefl.'yyDDDHHmmss'.hdf'" />
+</OutputTypes>
+</NISGS-SPA-INSTALL>

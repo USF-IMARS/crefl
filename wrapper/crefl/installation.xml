@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<AlgorithmInstallation>
+ <Name>CREFL</Name>
+ <Variables>
+  <PATH environment="PATH"/>
+  <algohome pathname="true">{cfg_installationDirectory}{/}..{/}..</algohome>
+ </Variables>
+ <Description>{cfg_installationDirectory}{/}generic.xml</Description>
+ <Executables>
+   <creflcmd>{algohome}{/}algorithm{/}crefl.1.7.1</creflcmd>
+   <DayNight.csh>{algohome}{/}algorithm{/}DayNight.csh</DayNight.csh>
+ </Executables>
+ <TemplateFiles>
+ </TemplateFiles>
+</AlgorithmInstallation>

@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--CREFL Algorithm-->
+
+<Algorithm>
+ <Name>CREFL</Name>
+
+ <!-- lists of elements naming the variables -->
+ <Parameters>
+    <resolution optional="true"/>
+    <nearest optional="true"/>
+    <toa optional="true"/>
+    <sealevel optional="true"/>
+    <gzip optional="true"/>
+    <overwrite optional="true"/>
+    <append optional="true"/>
+    <bands optional="true"/>
+    <verbose optional="true"/>
+    <maxsolz optional="true"/>
+    <range optional="true"/>
+ </Parameters>
+ <Inputs>
+	<modis.mxd02qkm/>
+	<modis.mxd02hkm/>
+	<modis.mxd021km/>
+ </Inputs>
+ <Outputs>
+        <modis.crefl optional="true"/>
+ </Outputs>
+ <Executables>
+	<creflcmd/>
+        <DayNight.csh/>
+ </Executables>
+ <TemplateFiles>
+ </TemplateFiles>
+ <Commands>
+                <!--Do a Day Night check for the input data before we start executing programs-->
+                <Ncs_run debug="true"
+                  cmd='{DayNight.csh} {modis.mxd021km}'
+                  standardFile="stdfile"
+                  errorFile="errfile">
+                  <env name="MODIS_DB_HOME" value="{algohome}/algorithm" />
+                  <env name="PATH" value=".:{algohome}/algorithm:${PATH}" />
+                </Ncs_run>
+                <Ncs_readFile file="{cfg_runDirectory}{/}DayNightCheck.txt"/>
+                <Ncs_test name="{DayNightCheck}" pattern="DAY" result="day-granule"/>
+                <Ncs_test name="{day-granule}" pattern="false" result="night-granule"/>
+                <Ncs_print  text="It is a  {DayNightCheck} pass" />
+                <Ncs_print  text="The day flag is  {day-granule}" />
+                <!-- End Day Night check-->
+
+
+                <!--Check and stop if nighttime granules are encountered-->
+                <Ncs_log runFlag="{night-granule}" text="Insufficient number of Day scans, processing will not continue on this granule." level="WARN" /> 
+                <Ncs_unbind runFlag="{night-granule}" name="modis.crefl"/>
+
+                <Ncs_boundp name="resolution" value="resolution-check"/>
+                <Ncs_set name="resolution-flag" value=""/>
+                <Ncs_set runFlag="{resolution-check}" name="resolution-flag" value=" --{resolution}"/>
+
+		<Ncs_boundp name="nearest" value="nearest-check"/>
+                <Ncs_set name="nearest-switch" value="false"/>
+                <Ncs_test runFlag="{nearest-check}" name="{nearest}" pattern="true" result="nearest-switch"/>
+                <Ncs_set name="nearest-flag" value=""/>
+                <Ncs_set runFlag="{nearest-switch}" name="nearest-flag" value=" --nearest"/>
+
+		<Ncs_boundp name="toa" value="toa-check"/>
+                <Ncs_set name="toa-switch" value="false"/>
+                <Ncs_test runFlag="{toa-check}" name="{toa}" pattern="true" result="toa-switch"/>
+                <Ncs_set name="toa-flag" value=""/>
+                <Ncs_set runFlag="{toa-switch}" name="toa-flag" value=" --toa"/>
+
+		<Ncs_boundp name="sealevel" value="sealevel-check"/>
+                <Ncs_set name="sealevel-switch" value="false"/>
+                <Ncs_test runFlag="{sealevel-check}" name="{sealevel}" pattern="true" result="sealevel-switch"/>
+                <Ncs_set name="sealevel-flag" value=""/>
+                <Ncs_set runFlag="{sealevel-switch}" name="sealevel-flag" value=" --sealevel"/>
+
+		<Ncs_boundp name="gzip" value="gzip-check"/>
+                <Ncs_set name="gzip-switch" value="false"/>
+                <Ncs_test runFlag="{gzip-check}" name="{gzip}" pattern="true" result="gzip-switch"/>
+                <Ncs_set name="gzip-flag" value=""/>
+                <Ncs_set runFlag="{gzip-switch}" name="gzip-flag" value=" --gzip"/>
+
+		<Ncs_boundp name="verbose" value="verbose-check"/>
+                <Ncs_set name="verbose-switch" value="false"/>
+                <Ncs_test runFlag="{verbose-check}" name="{verbose}" pattern="true" result="verbose-switch"/>
+                <Ncs_set name="verbose-flag" value=""/>
+                <Ncs_set runFlag="{verbose-switch}" name="verbose-flag" value=" --verbose"/>
+
+		<Ncs_boundp name="overwrite" value="overwrite-check"/>
+                <Ncs_set name="overwrite-switch" value="true"/>
+                <Ncs_test runFlag="{overwrite-check}" name="{overwrite}" pattern="true" result="overwrite-switch"/>
+                <Ncs_set name="overwrite-flag" value=""/>
+                <Ncs_set runFlag="{overwrite-switch}" name="overwrite-flag" value=" --overwrite"/>
+
+		<Ncs_boundp name="append" value="append-check"/>
+                <Ncs_set name="append-switch" value="false"/>
+                <Ncs_test runFlag="{append-check}" name="{append}" pattern="true" result="append-switch"/>
+                <Ncs_set name="append-flag" value=""/>
+                <Ncs_set runFlag="{append-switch}" name="append-flag" value=" --append"/>
+
+		<Ncs_boundp name="bands" value="bands-check"/>
+                <Ncs_set name="bands-flag" value="--bands=1,2,3,4,5,6,7"/>
+                <Ncs_set runFlag="{bands-check}" name="bands-flag" value=" --bands={bands}"/>
+
+		<Ncs_boundp name="maxsolz" value="maxsolz-check"/>
+                <Ncs_set name="maxsolz-flag" value=""/>
+                <Ncs_set runFlag="{maxsolz-check}" name="maxsolz-flag" value=" --maxsolz={maxsolz}"/>
+
+		<Ncs_boundp name="range" value="range-check"/>
+                <Ncs_set name="range-flag" value=""/>
+                <Ncs_set runFlag="{range-check}" name="range-flag" value=" --range={range}"/>
+
+		<!-- Crefl Station -->
+		<Ncs_set name="tbase" 
+			value="{algohome}/algorithm/tbase.hdf" />
+
+		<Ncs_checkFile file="{tbase}" />
+		
+		<!-- make symlink in RUN directory to tbase.hdf. -->
+		<MakeLink file="{tbase}"
+			link="{cfg_runDirectory}{/}tbase.hdf" />
+		<!-- crefl also needs renamed input files - more symlinks -->
+		<MakeLink file="{modis.mxd02qkm}"
+			link="{cfg_runDirectory}{/}MOD02QKM.hdf" />
+		<MakeLink file="{modis.mxd02hkm}"
+			link="{cfg_runDirectory}{/}MOD02HKM.hdf" />
+		<MakeLink file="{modis.mxd021km}"
+			link="{cfg_runDirectory}{/}MOD021KM.hdf" />
+		
+		<!-- Run crefl Algorithm -->
+		<Ncs_run debug="true" runFlag="{day-granule}"
+				 standardFile="stdfile"
+				 errorFile="errfile" 
+		cmd= "{creflcmd} {overwrite-flag} {append-flag} {resolution-flag} {nearest-flag} {toa-flag} {sealevel-flag} {gzip-flag} {verbose-flag} {maxsolz-flag} {range-flag} MOD02HKM.hdf MOD02QKM.hdf MOD021KM.hdf --of={modis.crefl} {bands-flag}" />
+
+                <Ncs_deleteFile file="{cfg_runDirectory}{/}MOD02QKM.hdf" />
+                <Ncs_deleteFile file="{cfg_runDirectory}{/}MOD02HKM.hdf" />
+                <Ncs_deleteFile file="{cfg_runDirectory}{/}MOD021KM.hdf" />
+                <Ncs_deleteFile file="{cfg_runDirectory}{/}tbase.hdf" />
+
+</Commands>
+</Algorithm>
